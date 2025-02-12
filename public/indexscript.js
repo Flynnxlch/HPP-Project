@@ -115,6 +115,10 @@ window.toggleTable = function(selectedTableId) {
       tableBody.innerHTML = ""; // Kosongkan data lama
       data.forEach(rowData => {
         const row = document.createElement("tr");
+
+        if (rowData.id) row.dataset.id = rowData.id;
+        if (rowData.cabang) row.dataset.cabang = rowData.cabang;
+        if (rowData.aircraft_type) row.dataset.aircraftType = rowData.aircraft_type;
         // Asumsikan setiap objek rowData memiliki property yang akan ditampilkan secara berurutan
         for (let key in rowData) {
           const td = document.createElement("td");
@@ -243,49 +247,122 @@ function addEditButton(tableId) {
   }
 }
 
+// Fungsi helper untuk membersihkan string format mata uang (misalnya menghilangkan "Rp ")
+function cleanCurrencyString(value) {
+  let cleaned = value.replace(/Rp\s*/g, "");   // Hapus "Rp" dan spasi di depannya
+  cleaned = cleaned.replace(/,00$/, "");        // Hapus trailing ",00" jika ada
+  return cleaned.trim();
+}
+
 function toggleEditMode(tableId, button) {
   const table = document.getElementById(tableId);
   const isEditing = button.textContent === 'Save';
 
   if (isEditing) {
-    // Nonaktifkan mode edit: nonaktifkan contentEditable dan hapus listener format (opsional)
+    // --- Mode Save: Nonaktifkan edit dan kumpulkan update untuk semua baris ---
     button.textContent = 'Edit';
     button.classList.remove('save-btn');
     button.classList.add('edit-btn');
+
+    // Array untuk menyimpan promise update setiap baris
+    const updatePromises = [];
+
     table.querySelectorAll('tbody tr').forEach(row => {
+      // Nonaktifkan contentEditable untuk kolom yang diubah (misalnya, Qty, Durasi, Rate per Hour)
       [1, 2, 3].forEach(index => {
         const cell = row.cells[index];
         if (cell) {
           cell.contentEditable = "false";
-          // Jika diinginkan, Anda bisa juga menghapus event listener format di sini:
-          cell.removeEventListener('blur', formatRateCell);
-          cell.removeEventListener('blur', formatDurationCell);
         }
       });
+
+      // Ambil identifier dan nilai dari baris
+      const id = row.dataset.id;
+      const cabang = row.dataset.cabang;
+      const aircraftType = row.dataset.aircraftType;
+
+      // Ambil nilai langsung dari cell
+      const Qty = row.cells[1].textContent.trim();           // Contoh: "3"
+      const Durasi = row.cells[2].textContent.trim();          // Contoh: "1,5"
+      const RatePerHour = row.cells[3].textContent.trim();     // Contoh: "100.000"
+      
+      // Untuk Cost: nilai yang ditampilkan misalnya "Rp 450.000,00"
+      // Tetapi sebelum dikirim, bersihkan dengan fungsi cleanCurrencyString
+      const rawCost = row.cells[4].textContent.trim();
+      const Cost = cleanCurrencyString(rawCost);              // Hasil: "450.000"
+
+      // Susun data update dengan format yang diinginkan
+      const updateData = {
+         Qty,        // akan dikirim sebagai "3"
+         Durasi,     // misalnya "1,5"
+         RatePerHour, // misalnya "100.000"
+         Cost         // misalnya "450.000" (tanpa "Rp " dan tanpa ",00")
+      };
+
+      // Gunakan id jika tersedia; jika tidak, gunakan filter (cabang dan aircraft_type)
+      if (id) {
+         updateData.id = id;
+      } else {
+         updateData.cabang = cabang;
+         updateData.aircraft_type = aircraftType;
+      }
+
+      // Tentukan endpoint berdasarkan tableId (misalnya, '/api/gse_data' atau '/api/sdm_data')
+      let endpoint = "";
+      if (tableId === 'TableGSE') {
+         endpoint = '/api/gse_data';
+      } else if (tableId === 'TableSDM') {
+         endpoint = '/api/sdm_data';
+      } else {
+         return; // Lewati jika bukan tabel yang akan di-update
+      }
+
+      // Lakukan update dengan fetch menggunakan method PUT
+      const promise = fetch(endpoint, {
+         method: 'PUT',
+         headers: {
+           'Content-Type': 'application/json'
+         },
+         body: JSON.stringify(updateData)
+      }).then(response => response.json());
+
+      updatePromises.push(promise);
     });
-    // Perbarui perhitungan total
-    calculateTotals();
+
+    // Setelah semua update selesai, berikan notifikasi dan lakukan perhitungan ulang jika perlu
+    Promise.all(updatePromises)
+       .then(results => {
+          console.log("Semua update berhasil:", results);
+          alert("Data berhasil disimpan untuk semua baris.");
+          calculateTotals(); // Jika ada fungsi perhitungan ulang total
+       })
+       .catch(error => {
+          console.error("Error dalam update baris:", error);
+          alert("Terjadi kesalahan saat menyimpan data.");
+       });
+
   } else {
-    // Aktifkan mode edit: aktifkan contentEditable untuk kolom Qty, Durasi, dan Rate per Hour
+    // --- Mode Edit: Aktifkan contentEditable untuk kolom yang diizinkan ---
     button.textContent = 'Save';
     button.classList.remove('edit-btn');
     button.classList.add('save-btn');
+
     table.querySelectorAll('tbody tr').forEach(row => {
-      // Kolom Qty (index 1)
-      let qtyCell = row.cells[1];
+      // Aktifkan edit untuk kolom Qty (index 1)
+      const qtyCell = row.cells[1];
       if (qtyCell) {
         qtyCell.contentEditable = "true";
         qtyCell.addEventListener('input', () => recalcCostForRow(row));
       }
-      // Kolom Durasi (index 2)
-      let durationCell = row.cells[2];
+      // Aktifkan edit untuk kolom Durasi (index 2)
+      const durationCell = row.cells[2];
       if (durationCell) {
         durationCell.contentEditable = "true";
         durationCell.addEventListener('input', () => recalcCostForRow(row));
         durationCell.addEventListener('blur', formatDurationCell);
       }
-      // Kolom Rate per Hour (index 3)
-      let rateCell = row.cells[3];
+      // Aktifkan edit untuk kolom Rate per Hour (index 3)
+      const rateCell = row.cells[3];
       if (rateCell) {
         rateCell.contentEditable = "true";
         rateCell.addEventListener('input', () => recalcCostForRow(row));
