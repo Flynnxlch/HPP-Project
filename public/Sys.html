@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+
+.sticky {
+    position: sticky;
+    top: 0;
+    background-color: #0a704b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px;
+    border-radius: 4px;
+    z-index: 1000;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+.hidden{
+    display: none;
+}
+
+
+#placeholder{
+    position: relative;
+    z-index: 2;
+}
+
+  .dropdown {
+    font-family: Arial, Helvetica, sans-serif;
+    position: relative;
+    display: inline-block;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 5px;
+  }
+
+  .dropdown:hover {
+    background-color: #3e8e41;
+  }
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #0a704b;
+  min-width: 200px;
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  border-radius: 5px;
+  padding: 10px;
+  top: 100%;
+}
+
+.dropdown-content a {
+color: white;
+  padding: 10px;
+  text-decoration: none;
+  display: block;
+  border-radius: 3px;
+}
+
+.dropdown-content a:hover {
+  color: #25dc99
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.duplicate-preview .dropdown-content {
+  left: auto;   /* Menghilangkan pengaturan left default */
+  right: 0;     /* Mengatur agar dropdown rata kanan dengan elemen induk */
+}
+
+.dropdown:hover .dropbtn {
+  background-color: #3e8e41;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+
+#editButton:hover, #saveButton:hover {
+  opacity: 0.8;
+}
+
+
+form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    background-color: #0a704b;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+label {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 15px;
+    margin-right: 5px;
+    color: #fff;
+  }
+  
+select {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    background-color: #fff;
+    transition: border-color 0.3s ease;
+}
+  
+  select:hover, select:focus {
+    border-color: #0c9361;
+}
+
+button[type="submitbutton"] {
+    padding: 10px 20px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #0c9361;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+  
+  button[type="submitbutton"]:hover {
+    background-color: #0a704b;
+}
+
+button[type="backbutton"] {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #fff;
+  background-color: #8b0f66;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button[type="backbutton"]:hover {
+  background-color: #7b0d5a;
+}
+
+table {
+  width: 100%;
+  margin: 20px 0;
+  z-index: 1;
+  border-collapse: collapse;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+  box-shadow: 0.5px 0.5px 4px 1.5px rgba(47, 73, 42, 0.218);
+}
+
+
+table, th, td {
+  border: 2px solid rgb(205, 205, 205);
+  padding: 8px;
+
+}
+
+table th {
+  background-color: #0c9361;
+  color: white;
+}
+
+table tr:nth-child(even) {
+  background-color: #e8eee9;
+}
+
+table tr:hover {
+  background-color: #f5f2f2;
+}
+
+.hidden {
+  display: none;
+}
+
+#Table1 {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1%;
+  margin-bottom: 2%;
+  text-align: center;
+  box-shadow: 0.5px 0.5px 4px 1.5px rgba(47, 73, 42, 0.218);
+}
+
+#Table1 td, #customers th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#Table1 tr:nth-child(even){background-color: #e8eee9;}
+
+#Table1 tr:hover {background-color: #f5f2f2;}
+
+#Table1 th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #0c9361;
+  color: white;
+  text-align: center
+}
+
+
+
+#Table2 {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1%;
+  margin-bottom: 2%;
+  text-align: center;
+  box-shadow: 0.5px 0.5px 4px 1.5px rgba(47, 73, 42, 0.218);
+}
+
+#Table2 td, #customers th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#Table2 tr:nth-child(even){background-color: #e8eee9;}
+
+#Table2 tr:hover {background-color: #f5f2f2;}
+
+#Table2 th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #0c9361;
+  color: white;
+  text-align: center
+}
+
+#Table3 {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1%;
+  margin-bottom: 2%;
+  text-align: center;
+  box-shadow: 0.5px 0.5px 4px 1.5px rgba(47, 73, 42, 0.218);
+}
+
+#Table3 td, #customers th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#Table3 tr:nth-child(even){background-color: #ffffff;}
+
+#Table3 tr:hover {background-color: #f5f2f2;}
+
+#Table3 th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #0c9361;
+  color: white;
+  text-align: center
+}
+
+
+
+
+
+#customers {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 1%;
+  margin-bottom: 2%;
+  text-align: center;
+  box-shadow: 0.5px 0.5px 4px 1.5px rgba(47, 73, 42, 0.218);
+}
+
+/* Styling untuk tombol Edit dan Save */
+.edit-btn-container button {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Tampilan default (Edit) */
+.edit-btn {
+  background-color: #0c9361;
+}
+
+/* Tampilan saat dalam mode Save */
+.save-btn {
+  background-color: #8b0f66;
+}
+
+/* Efek hover */
+.edit-btn-container button:hover {
+  transform: scale(1.02);
+}
+
+/* Efek fokus */
+.edit-btn-container button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(12, 147, 97, 0.5);
+}
+
+
+#customers td, #customers th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#customers tr:nth-child(even){background-color: #e8eee9;}
+
+#customers tr:hover {background-color: #f5f2f2;}
+
+#customers th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #0c9361;
+  color: white;
+  text-align: center
+}
+
+#floating-subtotals {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+}
+</style>
+</head>
+<body>
+  <div class="sticky">
+
+    <div class="dropdown">
+      Preview Data
+      <div class="dropdown-content">
+        <a href="#" onclick="toggleTable('TableGSE')">GSE</a>
+        <a href="#" onclick="toggleTable('TableSDM')">SDM</a>
+        <a href="#" onclick="toggleTable('TableOperasi')">Operasional</a>
+      </div>
+    </div>
+    <form id="filterform">
+        <label for="cabang">Cabang :</label>
+        <select name="cabang" id="cabang">
+          <option value="">Pilih Cabang</option>
+          <!-- Opsi cabang akan diisi secara dinamis dari database -->
+        </select>
+      
+        <label for="aircraft">Aircraft Type :</label>
+        <select name="aircraft" id="aircraft">
+          <option value="">Pilih Aircraft Type</option>
+          <!-- Opsi Aircraft Type akan diisi secara dinamis dari database -->
+        </select>
+      
+        <button type="submitbutton">Search</button>
+        <button type="backbutton" class="hidden ">Reset</button>
+      </form>
+    
+      <div class="dropdown duplicate-preview" style="margin-left:auto;">
+        <span class="hamburger-icon">☰</span>
+        <div class="dropdown-content">
+          <a href="#" onclick="inputData(event)">Input Data</a>
+          <a href="#" onclick="moreData()">More Data</a>
+          <a href="#" onclick="exitApp()">Exit</a>
+        </div>
+      </div>
+  </div>
+</div>
+
+<div id="placeholder">
+    <img src="Produck  GLC.pptx.jpg" alt="Data belum tersedia" style="width: 100%; margin: auto; display: block;">
+  </div>
+
+
+<table id="TableTotal"  class="hidden">
+    <tr>
+        <th>Operasional langsung</th>
+        <th>Margin profit (10%)</th>
+        <th>Total Tarif</th>
+    </tr>
+    <tr>
+        <td id="operasional"></td>
+        <td id="profit_margin"></td>
+        <td id="total_tarif"></td>
+    </tr>
+</table>
+
+<!--<h1>GSE contenteditable </h1> -->
+<table id="TableGSE"  class="hidden">
+
+  <thead>
+  <tr>
+    <th>GSE</th>
+    <th>Qty</th>
+    <th>Durasi (%)</th>
+    <th>Rate per Hour </th>
+    <th>Cost</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  </tbody>
+
+  <tfoot>
+  <th>Subtotal GSE</th>
+  <th></th>
+  <th></th>
+  <th></th>
+  <td id = "totalGSE"></td>
+  </tfoot>
+</table>
+
+<!--<h1>SDM</h1> contenteditable -->
+<table id="TableSDM"  class="hidden">
+
+    <thead>
+        <tr>
+        <th>SDM</th>
+        <th>Qty</th>
+        <th>Hours</th>
+        <th>Rate per Hour</th>
+        <th>Cost </th>
+        </tr>
+    </thead>
+
+    <tbody>
+    </tbody>
+
+    <tfoot>
+        <th>Subtotal SDM</th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <td id = "totalSDM"></td>
+    </tfoot>
+  </table>
+
+<!--<h1>Total Biaya Operational Langsung contenteditable</h1> -->
+<table id="TableOperasi"  class="hidden">
+    <thead>
+    <tr>
+      <th>Total Biaya Operasional Langsung</th>
+      <th>(%)</th>
+      <th>TC</th>
+    </tr>
+    </thead>
+   <tbody>
+
+   </tbody>
+    <tfoot>
+    <th>Subtotal Operational</th>
+    <th></th>
+    <td id="Sboperasi"></td>
+    </tfoot>
+    
+  </table>
+  <script src="indexscript.js"></script>
+</body>
+</html>

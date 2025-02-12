@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Input Data Template - Tabs</title>
+  <style>
+    /* Global Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+      margin: 20px 0;
+      color: #333;
+    }
+
+    .sticky {
+      position: sticky;
+      top: 0;
+      background-color: #0a704b;
+      display: flex;
+      flex-direction: column;
+      z-index: 1000;
+      box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    /* Tab Navigation */
+    .tabs {
+      display: flex;
+      width: 100%;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      background-color: #0a704b; /* Warna dasar sesuai dengan sticky header */
+      margin: 0;
+      padding: 0;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 10px 15px;
+      margin-right: 2px; /* Sedikit jarak antar tab */
+      background-color: #0a704b;
+      color: #fff;
+      cursor: pointer;
+      border: 1px solid transparent;
+      border-top-left-radius: 5px;
+      border-top-right-radius: 5px;
+      transition: all 0.3s ease;
+    }
+    .tab:hover {
+      background: #0a704b;
+    }
+    .tab.active {
+      background-color: #fff;
+      color: #0a704b;
+      border-color: #ddd #ddd transparent; /* Border atas dan samping */
+      border-bottom: none;  /* Menggabungkan dengan konten di bawah */
+      position: relative;
+      top: 1px; /* Memberi efek seolah tab aktif menonjol ke depan */
+    }
+    /* Tab Content */
+    .tab-content {
+      display: none;
+      padding: 20px;
+      background: #fff;
+      min-height: 400px;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    /* Section Styles (untuk input) */
+    .section {
+      margin-bottom: 40px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .add-button-container {
+      /* Secara default add-button-container rata kanan */
+      text-align: right;
+      margin-top: 10px;
+    }
+    /* Untuk section Operasi, tombol Add ditempatkan di tengah */
+    #sectionOperasi .add-button-container {
+      text-align: center;
+    }
+    button {
+      padding: 8px 15px;
+      margin: 5px;
+      border: none;
+      background: #0c9361;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0a704b;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    thead {
+      background: #0c9361;
+      color: #fff;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+    input[type="number"],
+    select {
+      width: 90%;
+      padding: 5px;
+      box-sizing: border-box;
+    }
+
+
+    .top-bar {
+      position: relative;
+      display: flex;
+      justify-content: center; /* Form akan berada di tengah */
+      align-items: center;     /* Semua elemen sejajar secara vertikal */
+      padding: 8px 15px;
+    }
+
+     /* ======= Form Filter (CSS sesuai dengan yang Anda sediakan) ======= */
+     form#filterform {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 12px;
+      align-items: center;
+      background-color: #0a704b;
+      padding: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      margin: 0; /* Hilangkan margin default */
+    }
+    form#filterform label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      margin-right: 5px;
+      color: #fff;
+    }
+    form#filterform select {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      outline: none;
+      background-color: #fff;
+      transition: border-color 0.3s ease;
+    }
+    form#filterform select:hover,
+    form#filterform select:focus {
+      border-color: #0c9361;
+    }
+    form#filterform button[type="submitbutton"] {
+      padding: 10px 20px;
+      font-size: 14px;
+      color: #fff;
+      background-color: #0c9361;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    form#filterform button[type="submitbutton"]:hover {
+      background-color: #0a704b;
+    }
+
+
+    /* CSS untuk menampilkan tanda persen pada input qty Operasi */
+    .percentage-container {
+      position: relative;
+      display: inline-block;
+    }
+    .percentage-container input {
+      padding-right: 30px; /* memberi ruang untuk simbol % */
+    }
+    .percentage-container::after {
+      content: '%';
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #333;
+      pointer-events: none;
+    }
+    /* Style Preview */
+    #previewSection table {
+      margin-bottom: 30px;
+    }
+    .back-button {
+      position: absolute;
+      left: 15px;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+    }
+    .back-button:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <header class="sticky">
+    <!-- Baris Pertama: Top Bar -->
+    <div class="top-bar">
+      <!-- Tombol Back/Exit di pojok kiri -->
+      <button class="back-button" onclick="window.location.href='Sys.html';">
+        &#8592; Back
+      </button>
+      <!-- Form Filter berada di tengah -->
+      <form id="filterform">
+        <label for="cabang">Cabang</label>
+        <select name="cabang" id="cabang">
+          <option value="">Pilih Cabang</option>
+          <!-- Opsi cabang akan diisi secara dinamis dari database -->
+        </select>
+      
+        <label for="aircraft">Aircraft Type</label>
+        <select name="aircraft" id="aircraft">
+          <option value="">Pilih Aircraft Type</option>
+          <!-- Opsi Aircraft Type akan diisi secara dinamis dari database -->
+        </select>
+      
+        <button type="submitbutton" disabled>Add</button>
+      </form>
+    </div>
+    <!-- Baris Kedua: Tabs Navigation -->
+    <nav class="tabs">
+      <div class="tab active" data-tab="home">Home</div>
+      <div class="tab" data-tab="gse">Input GSE</div>
+      <div class="tab" data-tab="sdm">Input SDM</div>
+      <div class="tab" data-tab="operasi">Input Operasi</div>
+      <div class="tab" data-tab="preview">Preview Data</div>
+    </nav>
+  </header>
+  <!-- Tab Contents -->
+  <div id="home" class="tab-content active">
+    <img src="Produck  GLC.pptx.jpg" alt="Data belum tersedia" style="width: 100%; margin: auto; display: block;">
+  </div>
+  
+  <div id="gse" class="tab-content">
+    <!-- Section GSE -->
+    <div class="section" id="sectionGSE">
+      <h2>GSE Data</h2>
+      <table id="tableGSE">
+        <thead>
+          <tr>
+            <th>Service GSE</th>
+            <th>Qty</th>
+            <th>Durasi (%)</th>
+            <th>Rate per Hour</th>
+            <th>Cost</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Baris default -->
+          <tr>
+            <td>
+              <select name="gse_item">
+                <option value="">Pilih Service GSE</option>
+                <option value="ATW">ATW</option>
+                <option value="ATN">ATN</option>
+                <option value="BTT Elektrik">BTT Elektrik</option>
+                <option value="BTT">BTT</option>
+                <option value="HLL">HLL</option>
+                <option value="MDL">MDL</option>
+                <option value="CBL">CBL</option>
+                <option value="CBL-T">CBL-T</option>
+                <option value="PBS">PBS</option>
+                <option value="TPS">TPS</option>
+                <option value="ATB">ATB</option>
+                <option value="BCT">BCT</option>
+                <option value="PDL">PDL</option>
+                <option value="LPD">LPD</option>
+                <option value="CDL">CDL</option>
+                <option value="Wheel Chock">Wheel Chock</option>
+                <option value="Safety Cone">Safety Cone</option>
+                <option value="LST">LST</option>
+                <option value="WST">WST</option>
+              </select>
+            </td>
+            <td><input type="number" name="gse_qty" class="calc-input"></td>
+            <td><input type="text" name="gse_durasi" class="calc-input durasi-input" inputmode="decimal"></td>
+            <td><input type="text" name="gse_rate" class="calc-input rate-input" inputmode="decimal"></td>
+            <td class="gse-cost">Rp 0.00</td>
+            <td><button class="removeRow">Remove</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4">Subtotal GSE</td>
+            <td id="subtotalGSE">Rp 0.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="add-button-container">
+        <button id="addGSE">Add GSE Row</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="sdm" class="tab-content">
+    <!-- Section SDM -->
+    <div class="section" id="sectionSDM">
+      <h2>SDM Data</h2>
+      <table id="tableSDM">
+        <thead>
+          <tr>
+            <th>Service SDM</th>
+            <th>Qty</th>
+            <th>Durasi (%)</th>
+            <th>Rate per Hour</th>
+            <th>Cost</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Baris default -->
+          <tr>
+            <td>
+              <select name="sdm_item">
+                <option value="">Pilih Service SDM</option>
+                <option value="Ramp Coordinator">Ramp Coordinator</option>
+                <option value="Marshalling">Marshalling</option>
+                <option value="Wing Man">Wing Man</option>
+                <option value="Avsec Make up -Break Down">Avsec Make up -Break Down</option>
+                <option value="Avsec Apron">Avsec Apron</option>
+                <option value="Pax Handling (Arrival Asisst) TD">Pax Handling (Arrival Asisst) TD</option>
+                <option value="Check In">Check In</option>
+                <option value="Boarding Gate">Boarding Gate</option>
+                <option value="Lost & Found">Lost & Found</option>
+                <option value="Help Desk">Help Desk</option>
+                <option value="Transfer Desk">Transfer Desk</option>
+                <option value="Loading Master">Loading Master</option>
+                <option value="Guide Man">Guide Man</option>
+                <option value="A/C Cleaner">A/C Cleaner</option>
+                <option value="Porter Apron">Porter Apron</option>
+                <option value="Porter Make Up - Break Down">Porter Make Up - Break Down</option>
+              </select>
+            </td>
+            <td><input type="number" name="sdm_qty" class="calc-input"></td>
+            <td><input type="text" name="sdm_durasi" class="calc-input durasi-input" inputmode="decimal"></td>
+            <td><input type="text" name="gse_rate" class="calc-input rate-input" inputmode="decimal"></td>
+            <td class="sdm-cost">Rp 0.00</td>
+            <td><button class="removeRow">Remove</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4">Subtotal SDM</td>
+            <td id="subtotalSDM">Rp 0.00</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+      <div class="add-button-container">
+        <button id="addSDM">Add SDM Row</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="operasi" class="tab-content">
+    <!-- Section Operasi -->
+    <div class="section" id="sectionOperasi">
+      <h2>Operasi Data</h2>
+      <table id="tableOperasi">
+        <thead>
+          <tr>
+            <th>Service Operasi</th>
+            <th>Qty (%)</th>
+            <th>Cost</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Baris default -->
+          <tr>
+            <td>
+              <select name="operasi_item">
+                <option value="">Pilih Service Operasi</option>
+                <option value="Beban Promosi & Adm. Umum">Beban Promosi & Adm. Umum</option>
+                <option value="Beban Kantor Pusat">Beban Kantor Pusat</option>
+                <option value="Kendaraan Operasional">Kendaraan Operasional</option>
+                <option value="Alat Komunikasi">Alat Komunikasi</option>
+                <option value="Beban Sewa Sistem & Utilitas">Beban Sewa Sistem & Utilitas</option>
+                <option value="Beban GH Support">Beban GH Support</option>
+                <option value="Beban Kantor GH">Beban Kantor GH</option>
+                <option value="Beban Klaim">Beban Klaim</option>
+              </select>
+            </td>
+            <td>    
+              <!-- Bungkus input qty dalam container untuk menampilkan "%" -->
+              <div class="percentage-container">
+                <input type="text" name="operasi_qty" max="100" class="calc-input durasi-input" inputmode="decimal">
+              </div>
+            </td>
+            <td class="operasi-cost">Rp 0.00</td>
+            <td><button class="removeRow">Remove</button></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">Subtotal Operasi</td>
+            <td id="subtotalOperasi">Rp 0.00</td>
+            
+          </tr>
+        </tfoot>
+      </table>
+      <div class="add-button-container">
+        <button id="addOperasi">Add Operasi Row</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="preview" class="tab-content">
+    <!-- Section Preview -->
+    <div class="section" id="previewSection">
+      <h2>Preview Data</h2>
+      <div id="previewContent"></div>
+      <button class="back-button" id="btnBack">Back to Edit</button>
+    </div>
+  </div>
+  
+  <script src="inputscript.js"></script>
+</body>
+</html> 
