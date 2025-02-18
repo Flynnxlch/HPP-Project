@@ -15,7 +15,7 @@ const pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
   password: '', // Ganti dengan password database Anda jika diperlukan
-  database: 'database_cbcb', // Ganti dengan nama database Anda
+  database: 'database jelek', // Ganti dengan nama database Anda
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -27,6 +27,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Rute untuk halaman utama (Sys.html)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'Sys.html'));
+});
+
+app.get('/sysoc', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'Sysoc.html'));
 });
 
 // ======================================================================
@@ -108,6 +112,26 @@ app.get('/api/customers', (req, res) => {
   );
 });
 
+// Endpoint untuk mendapatkan data Overhead
+app.get('/api/overhead', (req, res) => {
+  const { cabang, aircraft_type } = req.query;
+  if (!cabang || !aircraft_type) {
+    return res.status(400).json({ error: 'Parameter cabang dan aircraft_type wajib disertakan.' });
+  }
+  pool.query(
+    'SELECT * FROM overhead WHERE Cabang = ? AND Aircraft_Type = ?',
+    [cabang, aircraft_type],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching overhead:", err);
+        return res.status(500).json({ error: 'Terjadi kesalahan pada database saat mengambil data overhead.' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+
 // ======================================================================
 //              ENDPOINT UNTUK MENAMBAH DATA (POST)
 // ======================================================================
@@ -144,6 +168,19 @@ app.post('/api/customers', (req, res) => {
     res.json({ message: 'Data customers berhasil ditambahkan', results });
   });
 });
+
+// Endpoint untuk menambahkan data ke tabel overhead
+app.post('/api/overhead', (req, res) => {
+  const data = req.body;
+  pool.query('INSERT INTO overhead SET ?', data, (err, results) => {
+    if (err) {
+      console.error("Error inserting overhead:", err);
+      return res.status(500).json({ error: 'Terjadi kesalahan pada database saat menambahkan data overhead.' });
+    }
+    res.json({ message: 'Data overhead berhasil ditambahkan', results });
+  });
+});
+
 
 // ======================================================================
 //              ENDPOINT UNTUK MENGUPDATE DATA (PUT)
@@ -287,6 +324,250 @@ app.put('/api/customers', (req, res) => {
     res.status(400).json({ error: 'Parameter id atau (cabang dan aircraft_type) wajib disertakan.' });
   }
 });
+// ======================================================================
+//                           API Sysoc
+// ======================================================================
+
+// Endpoint baru untuk Sysoc.html: mengambil filter hanya dari tabel overhead dan customers
+app.get('/api/filters_sysoc', (req, res) => {
+  const query = `
+    SELECT DISTINCT Cabang AS cabang FROM overhead
+    UNION
+    SELECT DISTINCT cabang FROM customers
+  `;
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching filters sysoc:", err);
+      return res.status(500).json({ error: 'Terjadi kesalahan saat mengambil filter sysoc.' });
+    }
+    const cabangArray = results.map(row => row.cabang);
+    res.json({ cabang: cabangArray });
+  });
+});
+
+
+
+app.get('/api/overhead_by_cabang', (req, res) => {
+  const { cabang } = req.query;
+  if (!cabang) {
+    return res.status(400).json({ error: 'Parameter cabang wajib disertakan.' });
+  }
+  pool.query(
+    'SELECT * FROM overhead WHERE Cabang = ?',
+    [cabang],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching overhead:", err);
+        return res.status(500).json({ error: 'Terjadi kesalahan saat mengambil data overhead.' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+
+app.get('/api/customers_by_cabang', (req, res) => {
+  const { cabang } = req.query;
+  if (!cabang) {
+    return res.status(400).json({ error: 'Parameter cabang wajib disertakan.' });
+  }
+  pool.query(
+    'SELECT * FROM customers WHERE cabang = ?',
+    [cabang],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching customers:", err);
+        return res.status(500).json({ error: 'Terjadi kesalahan pada database saat mengambil data customers.' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+// Endpoint untuk update data overhead berdasarkan cabang
+app.put('/api/overhead_by_cabang', (req, res) => {
+  const { cabang, data } = req.body;
+  if (!cabang || !data || !Array.isArray(data)) {
+    return res.status(400).json({ error: "Parameter cabang dan data harus disediakan." });
+  }
+  let errors = [];
+  let promises = data.map(item => {
+    return new Promise((resolve, reject) => {
+      pool.query(
+        'UPDATE overhead SET Standar = ? WHERE Cabang = ? AND Keterangan = ?',
+        [item.Standar, cabang, item.Keterangan],
+        (err, results) => {
+          if (err) {
+            errors.push(err);
+            resolve(null);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+  });
+  Promise.all(promises).then(() => {
+    if (errors.length > 0) {
+      return res.status(500).json({ error: "Error updating some rows", details: errors });
+    }
+    res.json({ message: "Data overhead berhasil diupdate" });
+  });
+});
+
+// Endpoint untuk update data customers berdasarkan cabang
+app.put('/api/customers_by_cabang', (req, res) => {
+  const { cabang, data } = req.body;
+  if (!cabang || !data || !Array.isArray(data)) {
+    return res.status(400).json({ error: "Parameter cabang dan data harus disediakan." });
+  }
+  let errors = [];
+  let promises = data.map(item => {
+    return new Promise((resolve, reject) => {
+      pool.query(
+        'UPDATE customers SET Standar = ? WHERE cabang = ? AND Keterangan = ?',
+        [item.Standar, cabang, item.Keterangan],
+        (err, results) => {
+          if (err) {
+            errors.push(err);
+            resolve(null);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+  });
+  Promise.all(promises).then(() => {
+    if (errors.length > 0) {
+      return res.status(500).json({ error: "Error updating some rows", details: errors });
+    }
+    res.json({ message: "Data customers berhasil diupdate" });
+  });
+});
+
+// ======================================================================
+//                           API SysRHP
+// ======================================================================
+
+// Endpoint untuk mengambil filter (distinct cabang) dari tabel gse_data dan sdm_data
+app.get('/api/filters_rate', (req, res) => {
+  const query = `
+    SELECT DISTINCT cabang FROM gse_data
+    UNION
+    SELECT DISTINCT cabang FROM sdm_data
+  `;
+  pool.query(query, (err, results) => {
+    if (err) {
+      console.error("Error fetching filters rate:", err);
+      return res.status(500).json({ error: 'Terjadi kesalahan saat mengambil filter rate.' });
+    }
+    const cabangArray = results.map(row => row.cabang);
+    res.json({ cabang: cabangArray });
+  });
+});
+
+// Endpoint untuk mendapatkan data gse_data berdasarkan cabang
+app.get('/api/gse_data_by_cabang', (req, res) => {
+  const { cabang } = req.query;
+  if (!cabang) {
+    return res.status(400).json({ error: 'Parameter cabang wajib disertakan.' });
+  }
+  pool.query(
+    'SELECT * FROM gse_data WHERE cabang = ?',
+    [cabang],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching gse_data:", err);
+        return res.status(500).json({ error: 'Terjadi kesalahan saat mengambil data gse_data.' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+// Endpoint untuk mendapatkan data sdm_data berdasarkan cabang
+app.get('/api/sdm_data_by_cabang', (req, res) => {
+  const { cabang } = req.query;
+  if (!cabang) {
+    return res.status(400).json({ error: 'Parameter cabang wajib disertakan.' });
+  }
+  pool.query(
+    'SELECT * FROM sdm_data WHERE cabang = ?',
+    [cabang],
+    (err, results) => {
+      if (err) {
+        console.error("Error fetching sdm_data:", err);
+        return res.status(500).json({ error: 'Terjadi kesalahan saat mengambil data sdm_data.' });
+      }
+      res.json(results);
+    }
+  );
+});
+
+// Endpoint untuk update data pada tabel gse_data berdasarkan cabang dan Keterangan
+app.put('/api/gse_data_by_cabang', (req, res) => {
+  const { cabang, data } = req.body;
+  if (!cabang || !data || !Array.isArray(data)) {
+    return res.status(400).json({ error: "Parameter cabang dan data harus disertakan." });
+  }
+  let errors = [];
+  let promises = data.map(item => {
+    return new Promise((resolve) => {
+      pool.query(
+        'UPDATE gse_data SET Rate_per_Hours_GSE = ? WHERE cabang = ? AND Keterangan = ?',
+        [item.Rate_per_Hours_GSE, cabang, item.Keterangan],
+        (err, results) => {
+          if (err) {
+            errors.push(err);
+            resolve(null);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+  });
+  Promise.all(promises).then(() => {
+    if (errors.length > 0) {
+      return res.status(500).json({ error: "Error updating some rows", details: errors });
+    }
+    res.json({ message: "Data gse_data berhasil diupdate" });
+  });
+});
+
+// Endpoint untuk update data pada tabel sdm_data berdasarkan cabang dan Keterangan
+app.put('/api/sdm_data_by_cabang', (req, res) => {
+  const { cabang, data } = req.body;
+  if (!cabang || !data || !Array.isArray(data)) {
+    return res.status(400).json({ error: "Parameter cabang dan data harus disertakan." });
+  }
+  let errors = [];
+  let promises = data.map(item => {
+    return new Promise((resolve) => {
+      pool.query(
+        'UPDATE sdm_data SET Rate_per_Hours_GSE = ? WHERE cabang = ? AND Keterangan = ?',
+        [item.Rate_per_Hours_GSE, cabang, item.Keterangan],
+        (err, results) => {
+          if (err) {
+            errors.push(err);
+            resolve(null);
+          } else {
+            resolve(results);
+          }
+        }
+      );
+    });
+  });
+  Promise.all(promises).then(() => {
+    if (errors.length > 0) {
+      return res.status(500).json({ error: "Error updating some rows", details: errors });
+    }
+    res.json({ message: "Data sdm_data berhasil diupdate" });
+  });
+});
+
+
 
 // ======================================================================
 //                           START SERVER

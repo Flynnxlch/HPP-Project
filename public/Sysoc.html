@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Operasional Cabang</title>
+  <style>
+    /* CSS Utama */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    header h1 {
+      font-size: 2rem;
+      color: #0053cb;
+    }
+    
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      position: relative;
+    }
+    
+    .card:hover {
+      background-color: #f0f0f0;
+    }
+    
+    .card.editing {
+      border: 2px solid #ff9800;
+      background-color: #fff8e1;
+    }
+    
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .card-row {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .card-column {
+      flex-basis: 25%;
+      text-align: center;
+    }
+    
+    .toggle {
+      font-size: 1.5rem;
+      padding: 0 10px;
+    }
+    
+    .details {
+      display: none;
+      padding: 10px;
+      background: #e8eee9;
+      border-radius: 0 0 8px 8px;
+      margin-top: 5px;
+      font-size: 0.95rem;
+    }
+    
+    .btn-back {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #8b0f66;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+    
+    .btn-back:hover {
+      background-color: #7b0d5a;
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    /* Styling untuk table card di detail */
+    .detail-section {
+      margin-bottom: 20px;
+    }
+    
+    .table-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background-color: #fff;
+    }
+    
+    .table-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .table-card table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table-card th,
+    .table-card td {
+      padding: 12px;
+      text-align: left;
+    }
+    
+    .table-card th {
+      background-color: #0053cb;
+      color: #fff;
+    }
+    
+    .table-card tbody tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    .table-card tbody tr:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .details h4 {
+      margin: 10px 0;
+      color: #0053cb;
+    }
+    
+    /* Styling untuk header sort */
+    .sorting-header {
+      margin-bottom: 10px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 8px;
+    }
+    
+    .sorting-header .card-row {
+      align-items: center;
+    }
+    
+    .sort-icon {
+      cursor: pointer;
+      margin-left: 5px;
+      color: #0053cb;
+      font-size: 1rem;
+    }
+    
+    /* Styling untuk tombol Edit & Save */
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+      /* Disembunyikan secara default */
+      display: none;
+    }
+    
+    .action-buttons button {
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    
+    .edit-btn {
+      background-color: #009688;
+      color: #fff;
+    }
+    
+    .save-btn {
+      background-color: #ff9800;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Operasional Cabang</h1>
+    </header>
+    
+    <!-- Header untuk Sorting (menampilkan kolom dan tombol sort pada Total) -->
+    <div class="sorting-header">
+      <div class="card-row">
+        <div class="card-column">Cabang</div>
+        <div class="card-column">Highest</div>
+        <div class="card-column">Lowest</div>
+        <div class="card-column">
+          Total 
+          <span class="sort-icon" onclick="sortCards('asc')" title="Sort Ascending">&#9650;</span>
+          <span class="sort-icon" onclick="sortCards('desc')" title="Sort Descending">&#9660;</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Container untuk card yang akan digenerate secara dinamis -->
+    <div id="card-container"></div>
+
+    <footer>
+      <a href="/" class="btn-back">Back to Main</a>
+    </footer>
+  </div>
+  <script src="ocscript.js"></script>
+</body>
+</html>
