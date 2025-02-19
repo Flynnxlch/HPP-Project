@@ -6,6 +6,9 @@ const bodyParser = require('body-parser');
 const app = express();
 const port = 8080;
 
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 // Middleware untuk parsing JSON dan URL-encoded
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -26,7 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Rute untuk halaman utama (Sys.html)
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'Sys.html'));
+  res.sendFile(path.join(__dirname, 'public', 'Syslog.html'));
 });
 
 app.get('/sysoc', (req, res) => {
@@ -566,6 +569,68 @@ app.put('/api/sdm_data_by_cabang', (req, res) => {
     res.json({ message: "Data sdm_data berhasil diupdate" });
   });
 });
+
+
+
+
+// ======================================================================
+//                           API SysLog
+// ======================================================================
+
+// --- Endpoint Signup ---
+app.post('/api/signup', (req, res) => {
+  const { email, password, role } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: "Email dan password diperlukan." });
+  }
+  bcrypt.hash(password, saltRounds, (err, hash) => {
+    if (err) {
+      console.error("Hashing error:", err);
+      return res.status(500).json({ success: false, message: "Terjadi kesalahan saat signup." });
+    }
+    const userData = { email, password: hash, role: role || "member" };
+    pool.query('INSERT INTO users SET ?', userData, (err, results) => {
+      if (err) {
+        console.error("Insert error:", err);
+        return res.status(500).json({ success: false, message: err.sqlMessage || "Database error." });
+      }
+      res.json({ success: true, message: "Signup berhasil." });
+    });
+  });
+});
+
+// Endpoint Login: verifikasi akun dari tabel "users"
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: "Email dan password diperlukan." });
+  }
+  pool.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+    if (err) {
+      console.error("Query error:", err);
+      return res.status(500).json({ success: false, message: "Database error." });
+    }
+    if (results.length === 0) {
+      return res.status(401).json({ success: false, message: "Akun tidak ditemukan." });
+    }
+    const user = results[0];
+    bcrypt.compare(password, user.password, (err, isMatch) => {
+      if (err) {
+        console.error("Compare error:", err);
+        return res.status(500).json({ success: false, message: "Terjadi kesalahan saat login." });
+      }
+      if (isMatch) {
+        res.json({ success: true, message: "Login berhasil.", role: user.role });
+      } else {
+        res.status(401).json({ success: false, message: "Password salah." });
+      }
+    });
+  });
+});
+
+
+
+
 
 
 

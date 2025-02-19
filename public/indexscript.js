@@ -7,11 +7,30 @@ function moreData() {
   alert("More Data dipilih");
 }
 
-function exitApp() {
-  alert("Exit dipilih");
-}
 
 document.addEventListener("DOMContentLoaded", function() {
+
+  const userRole = localStorage.getItem("userRole");
+    if(userRole !== "master"){
+      // Nonaktifkan link untuk user non-master
+      document.getElementById("linkSysoc").style.pointerEvents = "none";
+      document.getElementById("linkSysRHP").style.pointerEvents = "none";
+      document.getElementById("linkSysoc").style.opacity = "0.5";
+      document.getElementById("linkSysRHP").style.opacity = "0.5";
+    }
+  
+
+    document.getElementById("logout-link").addEventListener("click", function(e) {
+      e.preventDefault();
+      exitApp();
+    });
+    
+    function exitApp() {
+      // Hapus data login (misal role user) di localStorage
+      localStorage.removeItem("userRole");
+      // Redirect ke halaman login
+      window.location.href = "Syslog.html";
+    }
 
   // Fungsi untuk memuat opsi filter (cabang dan aircraft type) ke dalam form secara otomatis
   function loadFilterOptions() {

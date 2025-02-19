@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login/Signup Form with Fade Transition</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      background: #fff;
+      overflow: hidden;
+    }
+    /* Background slider di body */
+    .bg-slider {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .bg-slider img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1s ease-in-out;
+    }
+    .bg-slider img.active {
+      opacity: 1;
+    }
+    /* Wrapper form */
+    .wrapper {
+      overflow: hidden;
+      max-width: 390px;
+      background: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0px 15px 20px rgba(0,0,0,0.1);
+      position: relative;
+      z-index: 1;
+      margin: 50px auto;
+    }
+    /* Judul dengan fade */
+    .title-container {
+      position: relative;
+      height: 50px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .title-text .title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      font-size: 35px;
+      font-weight: 600;
+      text-align: center;
+      color: #000;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    .title-text .title.active {
+      opacity: 1;
+    }
+    /* Slide controls (tetap sama) */
+    .slide-controls {
+      position: relative;
+      display: flex;
+      height: 50px;
+      width: 100%;
+      overflow: hidden;
+      margin: 30px 0 10px;
+      border: 1px solid lightgrey;
+      border-radius: 15px;
+    }
+    .slide-controls .slide {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 500;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.6s ease;
+      z-index: 1;
+    }
+    .slide-controls label.signup {
+      color: #000;
+    }
+    .slider-tab {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to right, #004d00, #007700, #009900, #00cc00);
+      border-radius: 15px;
+      z-index: 0;
+      transition: all 0.6s ease;
+    }
+    input[type="radio"] {
+      display: none;
+    }
+    #signup:checked ~ .slider-tab {
+      left: 50%;
+    }
+    #signup:checked ~ label.signup {
+      color: #fff;
+      cursor: default;
+    }
+    #signup:checked ~ label.login {
+      color: #000;
+    }
+    #login:checked ~ label.signup {
+      color: #000;
+    }
+    #login:checked ~ label.login {
+      cursor: default;
+    }
+    /* Form container dengan fade transition */
+    .form-container {
+      position: relative;
+      height: 320px; /* Sesuaikan tinggi sesuai kebutuhan */
+    }
+    .form-inner form {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }
+    .form-inner form.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .field {
+      height: 50px;
+      width: 100%;
+      margin-top: 20px;
+      position: relative;
+    }
+    .field input {
+      height: 100%;
+      width: 100%;
+      outline: none;
+      padding-left: 15px;
+      padding-right: 40px;
+      border-radius: 15px;
+      border: 1px solid lightgrey;
+      border-bottom-width: 2px;
+      font-size: 17px;
+      transition: all 0.3s ease;
+    }
+    .field input:focus {
+      border-color: #1a75ff;
+    }
+    .field input::placeholder {
+      color: #999;
+      transition: all 0.3s ease;
+    }
+    form .field input:focus::placeholder {
+      color: #1a75ff;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #999;
+      font-size: 18px;
+    }
+    .form-inner form .pass-link {
+      margin-top: 5px;
+    }
+    .form-inner form .signup-link {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .form-inner form .pass-link a,
+    .form-inner form .signup-link a {
+      color: #1a75ff;
+      text-decoration: none;
+    }
+    .form-inner form .pass-link a:hover,
+    .form-inner form .signup-link a:hover {
+      text-decoration: underline;
+    }
+    form .btn {
+      height: 50px;
+      width: 100%;
+      border-radius: 15px;
+      position: relative;
+      overflow: hidden;
+      margin-top: 20px;
+    }
+    form .btn .btn-layer {
+      height: 100%;
+      width: 300%;
+      position: absolute;
+      left: -80%;
+      background: -webkit-linear-gradient(right, #004d00, #007700, #009900, #00cc00);
+      border-radius: 15px;
+      transition: all 0.4s ease;
+      z-index: 1;
+    }
+    form .btn:hover .btn-layer {
+      left: 0;
+    }
+    form .btn input[type="submit"] {
+      height: 100%;
+      width: 100%;
+      z-index: 1;
+      position: relative;
+      background: none;
+      border: none;
+      color: #fff;
+      padding-left: 0;
+      border-radius: 15px;
+      font-size: 20px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    /* Loading indicator */
+    #loading {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.7);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <!-- Background slider -->
+  <div class="bg-slider">
+    <img src="bg01.jpg" alt="Background 1" class="active">
+    <img src="bg02.jpg" alt="Background 2">
+    <img src="bg03.jpg" alt="Background 3">
+  </div>
+  
+  <!-- Loading indicator -->
+  <div id="loading">Loading...</div>
+  
+  <div class="wrapper">
+    <div class="title-container">
+      <div class="title-text">
+        <div class="title login active">Login Form</div>
+        <div class="title signup">Signup Form</div>
+      </div>
+    </div>
+    <div class="slide-controls">
+      <input type="radio" name="slide" id="login" checked>
+      <input type="radio" name="slide" id="signup">
+      <label for="login" class="slide login">Login</label>
+      <label for="signup" class="slide signup">Signup</label>
+      <div class="slider-tab"></div>
+    </div>
+    <div class="form-container">
+      <div class="form-inner">
+        <!-- Login Form -->
+        <form id="login-form" action="#" class="login active">
+          <div class="field">
+            <input type="email" id="login-email" placeholder="Email Address" required>
+          </div>
+          <div class="field">
+            <input type="password" id="login-password" placeholder="Password" required>
+            <span class="toggle-password" onclick="togglePassword('login-password')">&#128065;</span>
+          </div>
+          <div class="pass-link"><a href="#">Forgot password?</a></div>
+          <div class="field btn">
+            <div class="btn-layer"></div>
+            <input type="submit" value="Login">
+          </div>
+          <div class="signup-link">Not a member? <a href="#">Signup now</a></div>
+        </form>
+        <!-- Signup Form -->
+        <form id="signup-form" action="#" class="signup">
+          <div class="field">
+            <input type="email" id="signup-email" placeholder="Email Address" required>
+          </div>
+          <div class="field">
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <span class="toggle-password" onclick="togglePassword('signup-password')">&#128065;</span>
+          </div>
+          <div class="field">
+            <input type="password" id="signup-confirm-password" placeholder="Confirm password" required>
+            <span class="toggle-password" onclick="togglePassword('signup-confirm-password')">&#128065;</span>
+          </div>
+          <div class="field btn">
+            <div class="btn-layer"></div>
+            <input type="submit" value="Signup">
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Background slider logic
+    const slides = document.querySelectorAll('.bg-slider img');
+    let currentSlide = 0;
+    setInterval(() => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }, 5000);
+    
+    // Toggle password
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === "password" ? "text" : "password";
+    }
+    
+    // Form switching with fade transition
+    const loginBtn = document.querySelector("label.login");
+    const signupBtn = document.querySelector("label.signup");
+    const loginForm = document.querySelector("form.login");
+    const signupForm = document.querySelector("form.signup");
+    const loginTitle = document.querySelector(".title.login");
+    const signupTitle = document.querySelector(".title.signup");
+    const signupLink = document.querySelector(".signup-link a");
+    
+    loginBtn.onclick = () => {
+      loginForm.classList.add("active");
+      signupForm.classList.remove("active");
+      loginTitle.classList.add("active");
+      signupTitle.classList.remove("active");
+    };
+    signupBtn.onclick = () => {
+      signupForm.classList.add("active");
+      loginForm.classList.remove("active");
+      signupTitle.classList.add("active");
+      loginTitle.classList.remove("active");
+    };
+    signupLink.onclick = (e) => {
+      e.preventDefault();
+      signupBtn.click();
+    };
+    
+    // Loading indicator functions
+    function showLoading() {
+      document.getElementById("loading").style.display = "flex";
+    }
+    function hideLoading() {
+      document.getElementById("loading").style.display = "none";
+    }
+    
+    // Master account credentials (hard-coded)
+    const MASTER_EMAIL = "master@admin.com";
+    const MASTER_PASSWORD = "S3cur3P@ssw0rd!";
+    
+    // Handle login submission
+    document.getElementById("login-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      showLoading();
+      const email = document.getElementById("login-email").value;
+      const password = document.getElementById("login-password").value;
+      
+      // Simulate loading delay
+      setTimeout(() => {
+        if (email === MASTER_EMAIL && password === MASTER_PASSWORD) {
+          localStorage.setItem("userRole", "master");
+          window.location.href = "Sys.html";
+        } else {
+          // Jika bukan master, lakukan login via API
+          fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password })
+          })
+          .then(response => response.json())
+          .then(data => {
+            hideLoading();
+            if (data.success) {
+              localStorage.setItem("userRole", "member");
+              window.location.href = "Sys.html";
+            } else {
+              alert("Login failed: " + data.message);
+            }
+          })
+          .catch(err => {
+            hideLoading();
+            console.error("Login error:", err);
+            alert("An error occurred during login.");
+          });
+        }
+      }, 1500);
+    });
+    
+    // Handle signup submission
+    document.getElementById("signup-form").addEventListener("submit", function(e) {
+      e.preventDefault();
+      showLoading();
+      const email = document.getElementById("signup-email").value;
+      const password = document.getElementById("signup-password").value;
+      const confirmPassword = document.getElementById("signup-confirm-password").value;
+      
+      if (password !== confirmPassword) {
+        hideLoading();
+        alert("Passwords do not match.");
+        return;
+      }
+      
+      // Simulate loading delay dan signup via API
+      setTimeout(() => {
+        fetch("/api/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, role: "member" })
+        })
+        .then(response => response.json())
+        .then(data => {
+          hideLoading();
+          if (data.success) {
+            alert("Signup successful. Please login.");
+          } else {
+            alert("Signup failed: " + data.message);
+          }
+        })
+        .catch(err => {
+          hideLoading();
+          console.error("Signup error:", err);
+          alert("An error occurred during signup.");
+        });
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
